@@ -1,0 +1,292 @@
+---
+title: "18a: Shiny Layouts"
+author: |
+  | Jerzy Wieczorek
+  | Department of Mathematics & Statistics
+  | Colby College
+date: "5/3/21"
+output: 
+  html_document:
+    toc:  true
+    toc_float:  true
+    code_folding:  show
+runtime: shiny
+---
+
+This is a continuation of `Lecture18_ShinyAndPlotly.Rmd`, with more specific details: common issues working Shiny, changing the layout or theme, etc.
+
+Note: today's lecture demonstrates interactive graphs with Shiny, so I cannot knit it as a standalone HTML file. You have to open this Rmd file in RStudio and run it there, so that the Shiny demos are connected to a running instance of R.
+
+***
+
+
+
+# Layouts in Shiny
+
+## Basic layout
+
+We recreate the dataset from the main lecture:
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+state_df <- cbind(State = row.names(state.x77), Region = state.region,
+                  data.frame(state.x77))
+```
+
+
+Here is a Shiny example from the main lecture. Our `ui` object has an `inputPanel` on top, then a single `plotOutput` below.
+
+```{r lecture18, warning=FALSE, message=FALSE}
+shinyApp(
+  
+  ui = fluidPage(
+    inputPanel(
+      
+      sliderInput("point_size", label = "Point size:",
+                  min = 0.5, max = 3, value = 2, step = 0.5),
+
+      checkboxInput("show_conf", label = "Include confidence band")
+  
+    ),
+    
+    plotOutput("state_plot")
+  ),
+  
+  server = function(input, output) {
+    output$state_plot <- renderPlot({
+      
+      ggplot(state_df, aes(x = HS.Grad, y = Illiteracy)) +
+        geom_point(size = input$point_size) + 
+        geom_smooth(method = "lm", se = input$show_conf) +
+        labs(x = "HS Graduation Rate",
+             title = "Education vs Illiteracy in US States in 1977")
+      
+    })
+  },
+  
+  options = list(height = 550)
+)
+```
+
+## Sidebar Layout
+
+Using ideas from RStudio's [Shiny Lesson 2, "Build a user interface,"](https://shiny.rstudio.com/tutorial/written-tutorial/lesson2/) we can make a slightly cleaner design for our interactive app. Let us use a `sidebarLayout` which will put all of the input widgets in a `sidebarPanel` on the left, then show our outputs in a `mainPanel` on the right. Let's also add a text paragraph with `p()` to describe our data source inside the `sidebarPanel`.
+
+Finally, we can also add a `titlePanel` on the top, outside the `sidebarLayout`.
+
+Nothing changes in the `server` code.
+
+```{r layout, warning=FALSE, message=FALSE}
+shinyApp(
+  
+  ui = fluidPage(
+    titlePanel("Lecture 18a Layout Example"),
+    
+    sidebarLayout(
+      sidebarPanel(
+      
+        sliderInput("point_size", label = "Point size:",
+                    min = 0.5, max = 3, value = 2, step = 0.5),
+  
+        checkboxInput("show_conf", label = "Include confidence band"),
+        
+        p("Data source: state.x77 data from R's datasets package.")
+    
+      ),
+      
+      mainPanel(
+        plotOutput("state_plot")
+      )
+
+    )
+  ),
+  
+  server = function(input, output) {
+    output$state_plot <- renderPlot({
+      
+      ggplot(state_df, aes(x = HS.Grad, y = Illiteracy)) +
+        geom_point(size = input$point_size) + 
+        geom_smooth(method = "lm", se = input$show_conf) +
+        labs(x = "HS Graduation Rate",
+             title = "Education vs Illiteracy in US States in 1977")
+      
+    })
+  },
+  
+  options = list(height = 550)
+)
+```
+
+## More Outputs
+
+Finally, recreate the app above, but add another output. This time, include a `textOutput` telling viewers whether a confidence band was selected. We need to add a `renderText` in the `server` object to do this.
+
+
+```{r outputs, warning=FALSE, message=FALSE}
+shinyApp(
+  
+  ui = fluidPage(
+    titlePanel("Lecture 18a Layout Example"),
+    
+    sidebarLayout(
+      sidebarPanel(
+      
+        sliderInput("point_size", label = "Point size:",
+                    min = 0.5, max = 3, value = 2, step = 0.5),
+  
+        checkboxInput("show_conf", label = "Include confidence band"),
+        
+        p("Data source: state.x77 data from R's datasets package.")
+    
+      ),
+      
+      mainPanel(
+        textOutput("is_conf_shown"), 
+        plotOutput("state_plot")
+      )
+
+    )
+  ),
+  
+  server = function(input, output) {
+    output$state_plot <- renderPlot({
+      
+      ggplot(state_df, aes(x = HS.Grad, y = Illiteracy)) +
+        geom_point(size = input$point_size) + 
+        geom_smooth(method = "lm", se = input$show_conf) +
+        labs(x = "HS Graduation Rate",
+             title = "Education vs Illiteracy in US States in 1977")
+      
+    })
+    
+    output$is_conf_shown <- renderText({
+      if(input$show_conf) {
+        return("Regression line with 95% confidence band:")
+      } else {
+        return("Regression line (no confidence band):")
+      }
+    })
+  },
+  
+  options = list(height = 550)
+)
+```
+
+## More on Layouts in Shiny
+
+Read the [Layout Guide](https://shiny.rstudio.com/articles/layout-guide.html) for other options such as grid layouts, tabsets, navlists, etc.
+
+You can use these approaches to create a fully-customized layout for your Shiny app, with fine control over the location of each component.
+
+On the other hand, sometimes you will prefer to follow a professional-looking template that someone else has made. We will see examples in the next section.
+
+***
+
+# Dashboards with Shiny
+
+Here are two ways to make clean, professional-looking layouts with Shiny.
+
+## `shinydashboard` vs `flexdashboard`
+
+Flex Dashboard (`flexdashboard`) is a really nice way to integrate your RMarkdown knowledge with Shiny.  It creates great-looking dashboard-style output that can be used when creating interactive graphics. And it can be used with other kinds of interaction, not just Shiny:
+
++  [https://blog.rstudio.org/2016/05/17/flexdashboard-easy-interactive-dashboards-for-r/]
++  [http://rmarkdown.rstudio.com/flexdashboard/]
++  [http://rmarkdown.rstudio.com/flexdashboard/examples.html]
++  [https://cran.r-project.org/web/packages/flexdashboard/index.html]
+
+On the other hand, another framework called `shinydashboard` is specifically designed to work well with Shiny. This has several Shiny widgets designed particularly for dashboard layouts.
+
++ [https://rstudio.github.io/shinydashboard/]
++ [https://rstudio.github.io/shinydashboard/examples.html]
++ [https://cran.r-project.org/web/packages/shinydashboard/index.html]
+
+`shinydashboard` **must** be connected to a running R instance, either on your local computer or online such as with ShinyApps.io. However, `flexdashboard` documents **don't** necessarily need to be used with Shiny. You could use this framework to make a dashboard-style layout which does **not** include Shiny interactions such as input widgets (only other interactive components, such as Plotly or htmlwidgets).  
+If so, it can be knitted into a standalone document which doesn't need a connection to a running R instance. You could just post it to your own website, for example, without running an R server continuously.
+
+For our final project, you **will be** using Shiny anyway. In that case, there are a few other differences between the two options, including how you write up the code and how you control the layout. It seems that `shinydashboard` is best thought of as a very nice theme for Shiny dashboards, while `flexdashboard` can be used more generally but might not always integrate with Shiny quite as well.
+
++ [https://shiny.rstudio.com/articles/dashboards.html]
++ [https://stackoverflow.com/questions/37992147/r-shiny-which-hammer-straight-shiny-flexdashboard-or-shinydashboard]
+
+Please see examples online. As a team, you'll choose one of these options for the final project. Meanwhile, below is our basic app from before, rewritten in the `shinydashboard` framework.
+
+## `shinydashboard` example
+
+Using `shinydashboard`, we put each content type inside a `box` item so it can be moved flexibly around the `dashboardBody`. If we made several tabs/pages, we could navigate them using the `dashboardSidebar`.
+
+```{r shinydashboard, warning=FALSE, message=FALSE}
+library(shinydashboard)
+shinyApp(
+  
+  ui = dashboardPage(
+    dashboardHeader(title = "ShinyDashboard Layout Example"),
+    
+    dashboardSidebar(),
+    
+    dashboardBody(
+      fluidRow(
+        box(
+          title = "Controls",
+          sliderInput("point_size", label = "Point size:",
+                      min = 0.5, max = 3, value = 2, step = 0.5),
+          checkboxInput("show_conf", label = "Include confidence band")
+        ),
+        
+        box(
+          title = "Results",
+          textOutput("is_conf_shown"), 
+          plotOutput("state_plot")
+
+        )
+      )
+    )
+  ),
+  
+  server = function(input, output) {
+    output$state_plot <- renderPlot({
+      
+      ggplot(state_df, aes(x = HS.Grad, y = Illiteracy)) +
+        geom_point(size = input$point_size) + 
+        geom_smooth(method = "lm", se = input$show_conf) +
+        labs(x = "HS Graduation Rate",
+             title = "Education vs Illiteracy in US States in 1977")
+      
+    })
+    
+    output$is_conf_shown <- renderText({
+      if(input$show_conf) {
+        return("Regression line with 95% confidence band:")
+      } else {
+        return("Regression line (no confidence band):")
+      }
+    })
+  },
+  
+  options = list(height = 650)
+)
+```
+
+
+
+## `flexdashboard` example
+
+This can't be embedded inside our current RMarkdown document; we would need to specify in the file header that it will be a `flexdashboard` document type. Instead, see the example in `Lecture18b_FlexDashboard.Rmd`, based on RStudio's example here:
+
+* [https://rmarkdown.rstudio.com/flexdashboard/shiny.html]
+
+***
+
+# Hosting on [ShinyApps.io](https://www.shinyapps.io/)
+
+To make a Shiny app which is **not** inside a RMarkdown document, the code structure may be slightly different than what we've seen in class. However, there are plenty of examples online that you can mimic to get started.
+
+Finally, you will need to host your class projects online at [ShinyApps.io](https://www.shinyapps.io/), as you did in Lab 10.
+
+For example, [here is a final project from a previous semester](https://hlandis.shinyapps.io/interactive_graphics_group_project_05-09_version/), while [here is a Shiny app that Jerzy made for a client](https://civilstat.shinyapps.io/DarekRadioTiles).
+
+In case you need to review the instructions for how to create a free ShinyApps.io account and deploy your Shiny apps there:
+
++ [https://shiny.rstudio.com/articles/shinyapps.html]
++ [http://docs.rstudio.com/shinyapps.io/]
+

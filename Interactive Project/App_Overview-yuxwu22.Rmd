@@ -1,0 +1,56 @@
+---
+title: "App Overview"
+output: html_document
+---
+
+This document is the overview of the shiny app created by Nelson Wu, mentored by Professor Jerzy Wieczorek.
+
+## Shiny App Link
+
+The attached link is the link to the shiny app, however, the map for some unknown reasons, might not work on the website. If that happens, please refer to the app file and run it directly. The link is <https://yuxwu22.shinyapps.io/Interactive_Project/?_ga=2.10775284.1922914461.1621416561-2146943312.1621416561>. 
+
+## Introduction
+
+This interactive app is using the Global Terror Database from Kaggle: https://www.kaggle.com/START-UMD/gtd which includes all of the terrorist incidents of the globe from 1970 to 2017, except for 1993. This dataset
+contains 181614 incidents, and more than 100 variables ranges from location (longitude and latitude) to the motive of each attack (in text). In this app, we visit the analysis of terrorist situation at a country  level. The intended users of this app would be anyone who wishes to know more about the terrorist situation in a specific country. Given the huge size of the Global Terrorism Database, it might take a while to load. There is no specific question in general that this app is designed to answer. As stated previously, this app is designed for people who are interested in the terrorist situation in a specific country so that they can explore on their own. 
+
+## Usage Example
+
+For the tab of "Country Map", there are two interactive plots in this page. The plots' attributes control the plot in the bottom. For the plot on the bottom, the x-axis is longitude and the y-axis is latitude. The users can choose a country and observe the terrorist situation in that country. The user can see the summary of the incident when hovering the mouse on one of the red points in the map. The top right plot presents the terrorist situations in the top three cities of the selected country. For the top right plot, the x-axis is the number of terrorist incidents and the y-axis is the name of cities. Additionally, the user can also change the bottom plot into a contour plot with the number of people been killed as the level. Moreover, the user can also choose to filter the terrorist incidents by the number of people died in that incident.
+
+For the tab of "Time Series", it would presents an interactive time series plot (x-axis is the date, and the y-axis is the number of terrorists incidents). Similarly, the users can choose a specific country and observe the trend of the terrorist situation of that country over time. Users can also manipulate the slider below the graph to look at the number of terrorist incidents for a specific month of a year. 
+
+For the tab of "Target Type", it would presents a word cloud of terrorist's target types. Similarly, the users can choose a specific country and observe the words that appear many times in the target type column of the database. I strongly recommend intended users to try many different countries because the most 'popular' target type might be really unexpected (for instance, trains).
+
+
+For the tab of "Type of Attacks", it would displays a bar plot with x-axis as the number of terrorist incidents and the y-axis as the types of terrorist incidents. Still, the intended users can choose a specific country to observe. Besides that, the intended users can also change the current bar plot to a bar plot with number of people killed as height of the bar.
+
+
+## Design Choices
+
+In general, I set the theme of the app to dark to match with the heavy tone of the topic (terrorist situation).
+
+For the tab of "Country Map", I added the interaction attribute of selecting country so that the intended users could examine the terrorist incidents that happen in the country that they are interested in. The second interaction feature I added is changing the bottom plot to a contour plot with number of people kiled as level. Users who enable this attribute would able to know that which areas in a specific country that have the most number of people died from terrorist incidents. This might help users to investige the potential relationship between the specific region and terrorist situation. The last interaction attribute that I added is a slider bar for users to filter the incidents on the map with the number of people who got killed from terrorist incidents. This attribute will help users to trace the incident that causes tremendous casualties. I included the bar plot on the top right to complement the bottom plot so that the users can have a better understanding of the terrorist situation in that specific country. The use of color red is meant to highlight the city with the biggest number of terrorist incidents, and the color red can also symbolize the blood or killing in the terrorist incidents.
+
+For the tab of "Time Series", I added the interaction attribute that the users can choose a country and examine the correponding plot for that country. Since it is a dygraph, the users can use the slider bar below the plot to see the trend of terrorist situation for a shorter time period. I used the dygraph to complement the geographical map in the first tap, so that intended users are able to examine the terrorist situation for a country over time.
+
+For the tab of "Target Type", I added the interaction attribute that the users can choose a country and examine the correponding plot for that country. Since there are too many categories of terrorist's target types, using a traditional bar plot might not be able to deliver the full picture. That's the reason I used the word cloud so that not only the users can have a basic understanding of what types there are but also the most regular target type by the size of the words.
+
+For the tab of "Type of Attacks", I added the interaction attribute that the users can choose a country and examine the correponding plot for that country. Moreover, I also added the interaction attribute to change the current bar plot to a bar plot with number of people killed as height of the bar. This feature would provide another view for users to examine the differences between different types of terrorist incidents.
+
+
+## Appendix
+
+I revised the app based on Professor Wieczorek's suggestions:
+
++ Fix the text of "number of terror activity" to "number of terrorist incidents"
+
++ Remove the "None" option from the dropdown menu in every tab.
+
++ Reword the introduction in the first tab.
+
++ Reorder the sub-dataset before plotting, so that the mouseover text is corrent and precise.
+
++ Fix the problems that the red bar shows the information twice.
+
++ Fix the problem for the dygraph that the plots for some countries don't appear correctly. 
